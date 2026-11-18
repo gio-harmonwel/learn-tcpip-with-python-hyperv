@@ -1,0 +1,26 @@
+Vagrant.configure("2") do |config|
+  # Ubuntu 22.04 LTS box with official Hyper-V provider support
+  config.vm.box = "generic/ubuntu2204"
+  config.vm.hostname = "tcpip-lab-node"
+
+  # Disable SMB synced folder prompts on Hyper-V
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # Hyper-V Provider Configuration (Dynamic Memory: 1024 MB - 1536 MB, 2 vCPUs)
+  config.vm.provider "hyperv" do |hv|
+    hv.vmname = "tcpip-python-lab"
+    hv.cpus = 2
+    hv.memory = 1024
+    hv.maxmemory = 1536
+    hv.enable_virtualization_extensions = false
+  end
+
+  # Provision Python 3 and TCP/IP diagnostic tools on first boot
+  config.vm.provision "shell", inline: <<-SHELL
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -qq
+    apt-get install -y --no-install-recommends python3 net-tools iproute2 tcpdump traceroute dnsutils
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+  SHELL
+end
